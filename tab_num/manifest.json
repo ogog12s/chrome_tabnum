@@ -5,8 +5,10 @@
   "description": "Tabの位置を教えてくれます",
   "permissions": [
     "tabs",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
