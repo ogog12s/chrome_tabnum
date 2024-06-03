@@ -1,3 +1,18 @@
+function updateAllTabTitles() {
+  chrome.tabs.query({ currentWindow: true }, (tabs) => {
+    tabs.forEach((tab) => {
+      const pureTitle = tab.title.replace(/^\d+:/, '');
+      const newTitle = `${tab.index + 1}: ${pureTitle}`;
+
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        function: updateTabTitle,
+        args: [newTitle]
+      });
+    });
+  });
+}
+
 function updateTabTitle(title) {
   document.title = title;
 }
@@ -14,20 +29,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.active) {
-    chrome.tabs.query({ currentWindow: true }, (tabs) => {
-      for (let tab of tabs) {
-        if (tab.id !== tabId) {
-          const pureTitle = tab.title.replace(/^\d+:/, '');
-          const newTitle = `${tab.index + 1}: ${pureTitle}`;
-
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            function: updateTabTitle,
-            args: [newTitle]
-          });
-        }
-      }
-    });
+    updateAllTabTitles();
     sendResponse({ status: "ok" });
   }
+});
+
+chrome.tabs.onRemoved.addListener(() => {
+  updateAllTabTitles();
 });
